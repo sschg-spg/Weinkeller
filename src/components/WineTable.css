@@ -1,0 +1,63 @@
+.wine-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.wine-table th,
+.wine-table td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: center;
+}
+
+.wine-table th {
+  background: #8b0000;
+  color: white;
+}
+
+.wine-table tr:nth-child(even) {
+  background: #f7f7f7;
+}
+
+.wine-table tr:hover {
+  background: #ececec;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.edit-btn {
+  background: #ffb300;
+  border: none;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.edit-btn:hover {
+  background: #e59d00;
+}
+
+.delete-btn {
+  background: #d32f2f;
+  border: none;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  background: #b71c1c;
+}
+
+.no-wines {
+  text-align: center;
+  margin-top: 40px;
+  color: #666;
+}

@@ -1,0 +1,34 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    font-size: 40px;
+    color: #5E1224;
+    font-weight: 700;
+    letter-spacing: -1px;
+}
+
+.add-button {
+    background: #6B1F2A;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    transition: all 0.25s ease;
+}
+
+.add-button:hover {
+    background: #84263A;
+    transform: translateY(-2px);
+}
+
+.add-button:active {
+    transform: translateY(0px);
+}

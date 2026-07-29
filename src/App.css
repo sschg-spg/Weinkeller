@@ -1,0 +1,71 @@
+.modal{
+    position:fixed;
+    inset:0;
+
+    background:rgba(0,0,0,.45);
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    z-index:100;
+}
+
+.modal-content{
+
+    width:500px;
+
+    background:white;
+
+    border-radius:18px;
+
+    padding:35px;
+
+    display:flex;
+    flex-direction:column;
+
+    gap:16px;
+
+    box-shadow:0 25px 60px rgba(0,0,0,.2);
+}
+
+.modal-content h2{
+    margin:0 0 10px;
+    color:#5b1b24;
+}
+
+.modal-content input{
+
+    padding:14px;
+
+    border-radius:10px;
+
+    border:1px solid #ddd;
+
+    font-size:15px;
+}
+
+.modal-buttons{
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    gap:12px;
+
+    margin-top:15px;
+}
+
+.cancel{
+
+    background:#ececec;
+
+    color:#333;
+}
+
+.save{
+
+    background:#7b1e2b;
+
+    color:white;
+}

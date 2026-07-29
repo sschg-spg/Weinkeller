@@ -1,0 +1,16 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Segoe UI", sans-serif;
+  background: linear-gradient(135deg, #f8f5f3, #efe3dd);
+  min-height: 100vh;
+}
+
+button,
+input {
+  font-family: inherit;
+}
