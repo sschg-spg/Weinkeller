@@ -100,6 +100,7 @@ function App() {
   return (
     <div className="app">
       <Header
+       bottleCount={wines.length}
         onAdd={() => {
           setEditIndex(null);
 

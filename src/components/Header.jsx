@@ -1,15 +1,21 @@
 import "./Header.css";
 
-function Header({ onAdd }) {
+function Header({ onAdd, bottleCount }) {
   return (
     <div className="header">
-      <h1>Weinkeller</h1>
+        <div>
+            <h1>Weinkeller</h1>
 
-      <button onClick={onAdd}>
-        + Wein hinzufügen
-      </button>
+            <p className="bottle-count">
+                🍷 Insgesamt {bottleCount} Flasche{bottleCount === 1 ? "" : "n"}
+            </p>
+        </div>
+
+        <button className="add-button" onClick={onAdd}>
+            + Wein hinzufügen
+        </button>
     </div>
-  );
+);
 }
 
 export default Header;
