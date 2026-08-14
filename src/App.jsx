@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
-
 import Header from "./components/Header";
 import SearchBar from "./components/SearchBar";
 import WineTable from "./components/WineTable";
 import WineForm from "./components/WineForm";
-
 import "./App.css";
 
 function App() {
@@ -16,47 +14,14 @@ function App() {
     const saved = localStorage.getItem("wines");
 
     if (saved) {
-      const parsedWines = JSON.parse(saved);
-
-      return parsedWines.map((wine) => ({
+      return JSON.parse(saved).map((wine) => ({
         ...wine,
         bottles: wine.bottles || [],
         updatedAt: wine.updatedAt || new Date().toISOString(),
       }));
     }
 
-    return [
-      {
-        name: "Grüner Veltliner",
-        year: "2022",
-        grape: "Grüner Veltliner",
-        country: "Österreich",
-        bottles: [
-          {
-            id: crypto.randomUUID(),
-            location: "A-3-4",
-          },
-          {
-            id: crypto.randomUUID(),
-            location: "A-3-5",
-          },
-        ],
-        updatedAt: new Date().toISOString(),
-      },
-      {
-        name: "Chianti Classico",
-        year: "2019",
-        grape: "Sangiovese",
-        country: "Italien",
-        bottles: [
-          {
-            id: crypto.randomUUID(),
-            location: "B-2-1",
-          },
-        ],
-        updatedAt: new Date().toISOString(),
-      },
-    ];
+    return [];
   });
 
   useEffect(() => {
@@ -83,68 +48,56 @@ function App() {
     });
   }
 
-  function locationIsOccupied(location, currentWineIndex = null) {
-    const normalizedLocation = location.trim().toLowerCase();
-
-    return wines.some((wine, wineIndex) => {
-      if (wineIndex === currentWineIndex) {
-        return false;
-      }
+  function locationUsed(location, ignoreIndex = null) {
+    return wines.some((wine, index) => {
+      if (index === ignoreIndex) return false;
 
       return (wine.bottles || []).some(
         (bottle) =>
-          bottle.location.trim().toLowerCase() === normalizedLocation
+          bottle.location.toLowerCase() ===
+          location.trim().toLowerCase()
       );
     });
   }
 
   function addWine() {
-    const location = newWine.location.trim();
-
     if (
       !newWine.name.trim() ||
       !newWine.year.trim() ||
       !newWine.grape.trim() ||
       !newWine.country.trim() ||
-      !location
+      !newWine.location.trim()
     ) {
       alert("Bitte alle Felder ausfüllen.");
       return;
     }
 
-    if (locationIsOccupied(location)) {
+    if (locationUsed(newWine.location)) {
       alert(
-        `❌ Stellplatz bereits belegt!\n\n${location}\n\nDort steht bereits ein anderer Wein.`
+        `❌ Stellplatz ${newWine.location} ist bereits belegt!`
       );
       return;
     }
 
-    const newBottle = {
+    const bottle = {
       id: crypto.randomUUID(),
-      location,
+      location: newWine.location.trim(),
     };
 
-    const existingIndex = wines.findIndex(
+    const existing = wines.findIndex(
       (wine) =>
-        wine.name.trim().toLowerCase() ===
-          newWine.name.trim().toLowerCase() &&
-        wine.year.trim().toLowerCase() ===
-          newWine.year.trim().toLowerCase() &&
-        wine.grape.trim().toLowerCase() ===
-          newWine.grape.trim().toLowerCase() &&
-        wine.country.trim().toLowerCase() ===
-          newWine.country.trim().toLowerCase()
+        wine.name.toLowerCase() === newWine.name.trim().toLowerCase() &&
+        wine.year === newWine.year.trim() &&
+        wine.grape.toLowerCase() === newWine.grape.trim().toLowerCase() &&
+        wine.country.toLowerCase() === newWine.country.trim().toLowerCase()
     );
 
-    if (existingIndex !== -1) {
+    if (existing >= 0) {
       const updated = [...wines];
 
-      updated[existingIndex] = {
-        ...updated[existingIndex],
-        bottles: [
-          ...(updated[existingIndex].bottles || []),
-          newBottle,
-        ],
+      updated[existing] = {
+        ...updated[existing],
+        bottles: [...updated[existing].bottles, bottle],
         updatedAt: new Date().toISOString(),
       };
 
@@ -157,7 +110,7 @@ function App() {
           year: newWine.year.trim(),
           grape: newWine.grape.trim(),
           country: newWine.country.trim(),
-          bottles: [newBottle],
+          bottles: [bottle],
           updatedAt: new Date().toISOString(),
         },
       ]);
@@ -167,10 +120,24 @@ function App() {
     setShowForm(false);
   }
 
-  function saveEditedWine() {
-    if (editIndex === null) {
-      return;
-    }
+  function editWine(index) {
+    const wine = wines[index];
+
+    setNewWine({
+      name: wine.name,
+      year: wine.year,
+      grape: wine.grape,
+      country: wine.country,
+      location: "",
+      bottles: [...wine.bottles],
+    });
+
+    setEditIndex(index);
+    setShowForm(true);
+  }
+
+  function saveEdit() {
+    if (editIndex === null) return;
 
     if (
       !newWine.name.trim() ||
@@ -182,34 +149,19 @@ function App() {
       return;
     }
 
-    const bottles = (newWine.bottles || []).map((bottle) => ({
-      ...bottle,
-      location: bottle.location.trim(),
-    }));
-
-    if (bottles.some((bottle) => !bottle.location)) {
-      alert("Jede Flasche muss einen Stellplatz haben.");
-      return;
-    }
-
-    const locations = bottles.map((bottle) =>
-      bottle.location.toLowerCase()
+    const locations = newWine.bottles.map((b) =>
+      b.location.trim().toLowerCase()
     );
 
-    const duplicateInsideWine =
-      new Set(locations).size !== locations.length;
-
-    if (duplicateInsideWine) {
-      alert(
-        "❌ Derselbe Stellplatz wurde bei mehreren Flaschen dieses Weins eingetragen."
-      );
+    if (new Set(locations).size !== locations.length) {
+      alert("❌ Zwei Flaschen dürfen nicht denselben Stellplatz haben.");
       return;
     }
 
-    for (const bottle of bottles) {
-      if (locationIsOccupied(bottle.location, editIndex)) {
+    for (const bottle of newWine.bottles) {
+      if (locationUsed(bottle.location, editIndex)) {
         alert(
-          `❌ Stellplatz bereits belegt!\n\n${bottle.location}\n\nDort steht bereits ein anderer Wein.`
+          `❌ Stellplatz ${bottle.location} ist bereits von einem anderen Wein belegt!`
         );
         return;
       }
@@ -223,55 +175,53 @@ function App() {
       year: newWine.year.trim(),
       grape: newWine.grape.trim(),
       country: newWine.country.trim(),
-      bottles,
+      bottles: newWine.bottles,
       updatedAt: new Date().toISOString(),
     };
 
     setWines(updated);
-
     resetForm();
     setEditIndex(null);
     setShowForm(false);
   }
 
   function deleteWine(index) {
-    const wine = wines[index];
+    if (
+      confirm(
+        `Möchtest du "${wines[index].name}" mit allen Flaschen löschen?`
+      )
+    ) {
+      setWines(wines.filter((_, i) => i !== index));
+    }
+  }
 
-    const confirmed = window.confirm(
-      `Möchtest du "${wine.name}" wirklich löschen?\n\nDabei werden alle ${
-        wine.bottles?.length || 0
-      } Flaschen dieses Weins entfernt.`
-    );
+  function deleteBottle(wineIndex, bottleId) {
+    const wine = wines[wineIndex];
+    const bottle = wine.bottles.find((b) => b.id === bottleId);
 
-    if (!confirmed) {
+    if (!bottle) return;
+
+    if (
+      !confirm(
+        `Diese einzelne Flasche löschen?\n\n${wine.name}\nStellplatz: ${bottle.location}`
+      )
+    ) {
       return;
     }
 
-    setWines(wines.filter((_, i) => i !== index));
-  }
+    const updated = [...wines];
 
-  function editWine(index) {
-    const wine = wines[index];
+    updated[wineIndex] = {
+      ...wine,
+      bottles: wine.bottles.filter((b) => b.id !== bottleId),
+      updatedAt: new Date().toISOString(),
+    };
 
-    setNewWine({
-      name: wine.name,
-      year: wine.year,
-      grape: wine.grape,
-      country: wine.country,
-      location: "",
-      bottles: (wine.bottles || []).map((bottle) => ({
-        ...bottle,
-      })),
-    });
+    if (updated[wineIndex].bottles.length === 0) {
+      updated.splice(wineIndex, 1);
+    }
 
-    setEditIndex(index);
-    setShowForm(true);
-  }
-
-  function openAddForm() {
-    setEditIndex(null);
-    resetForm();
-    setShowForm(true);
+    setWines(updated);
   }
 
   const filteredWines = wines.filter((wine) => {
@@ -280,14 +230,14 @@ function App() {
       ${wine.year}
       ${wine.grape}
       ${wine.country}
-      ${(wine.bottles || []).map((bottle) => bottle.location).join(" ")}
+      ${wine.bottles.map((b) => b.location).join(" ")}
     `.toLowerCase();
 
     return text.includes(search.toLowerCase());
   });
 
   const totalBottles = wines.reduce(
-    (total, wine) => total + (wine.bottles?.length || 0),
+    (sum, wine) => sum + wine.bottles.length,
     0
   );
 
@@ -295,7 +245,11 @@ function App() {
     <div className="app">
       <Header
         bottleCount={totalBottles}
-        onAdd={openAddForm}
+        onAdd={() => {
+          resetForm();
+          setEditIndex(null);
+          setShowForm(true);
+        }}
       />
 
       <SearchBar
@@ -305,23 +259,20 @@ function App() {
 
       <WineTable
         wines={filteredWines}
-        onDelete={deleteWine}
         onEdit={editWine}
+        onDelete={deleteWine}
+        onDeleteBottle={deleteBottle}
       />
 
       <WineForm
         show={showForm}
         isEditing={editIndex !== null}
         onClose={() => {
-          setShowForm(false);
-          setEditIndex(null);
           resetForm();
+          setEditIndex(null);
+          setShowForm(false);
         }}
-        onSave={
-          editIndex !== null
-            ? saveEditedWine
-            : addWine
-        }
+        onSave={editIndex !== null ? saveEdit : addWine}
         newWine={newWine}
         setNewWine={setNewWine}
       />

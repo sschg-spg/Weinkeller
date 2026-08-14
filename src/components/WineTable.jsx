@@ -1,30 +1,10 @@
 import { useState } from "react";
 import "./WineTable.css";
 
-function WineTable({ wines, onDelete, onEdit }) {
-  const [openMenu, setOpenMenu] = useState(null);
+function WineTable({ wines, onEdit, onDelete, onDeleteBottle }) {
+  const [menu, setMenu] = useState(null);
 
-  function formatDate(dateString) {
-    if (!dateString) {
-      return "Unbekannt";
-    }
-
-    const date = new Date(dateString);
-
-    if (Number.isNaN(date.getTime())) {
-      return "Unbekannt";
-    }
-
-    return date.toLocaleString("de-DE", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }
-
-  if (wines.length === 0) {
+  if (!wines.length) {
     return (
       <div className="no-wines">
         <h3>🍷 Keine Weine gefunden.</h3>
@@ -46,109 +26,102 @@ function WineTable({ wines, onDelete, onEdit }) {
       </thead>
 
       <tbody>
-        {wines.map((wine, index) => {
-          const bottles = wine.bottles || [];
+        {wines.map((wine, index) => (
+          <tr key={index}>
+            <td>{wine.name}</td>
+            <td>{wine.year}</td>
+            <td>{wine.grape}</td>
+            <td>{wine.country}</td>
 
-          return (
-            <tr key={index}>
-              <td>{wine.name}</td>
+            <td>
+              <strong>
+                {wine.bottles.length}{" "}
+                {wine.bottles.length === 1 ? "Flasche" : "Flaschen"}
+              </strong>
+            </td>
 
-              <td>{wine.year}</td>
+            <td className="actions">
+              <button
+                className="edit-btn"
+                onClick={() => onEdit(index)}
+              >
+                ✏️ Bearbeiten
+              </button>
 
-              <td>{wine.grape}</td>
+              <button
+                className="delete-btn"
+                onClick={() => onDelete(index)}
+              >
+                🗑 Löschen
+              </button>
 
-              <td>{wine.country}</td>
-
-              <td>
-                <strong>{bottles.length}</strong>{" "}
-                {bottles.length === 1
-                  ? "Flasche"
-                  : "Flaschen"}
-              </td>
-
-              <td className="actions">
+              <div className="wine-menu">
                 <button
-                  className="edit-btn"
-                  onClick={() => onEdit(index)}
+                  className="menu-btn"
+                  onClick={() =>
+                    setMenu(menu === index ? null : index)
+                  }
                 >
-                  ✏️ Bearbeiten
+                  ⋮
                 </button>
 
-                <button
-                  className="delete-btn"
-                  onClick={() => onDelete(index)}
-                >
-                  🗑 Löschen
-                </button>
-
-                <div className="wine-menu">
-                  <button
-                    className="menu-btn"
-                    onClick={() =>
-                      setOpenMenu(
-                        openMenu === index ? null : index
-                      )
-                    }
-                    title="Stellplätze anzeigen"
-                  >
-                    ⋮
-                  </button>
-
-                  {openMenu === index && (
-                    <div className="wine-menu-popup">
-                      <div className="menu-title">
-                        🍷 {wine.name}
-                      </div>
-
-                      <div className="menu-subtitle">
-                        📍 Stellplätze
-                      </div>
-
-                      <div className="bottle-list">
-                        {bottles.length === 0 ? (
-                          <div className="empty-location">
-                            Keine Stellplätze
-                          </div>
-                        ) : (
-                          bottles.map((bottle, bottleIndex) => (
-                            <div
-                              className="bottle-location"
-                              key={bottle.id || bottleIndex}
-                            >
-                              <span>
-                                Flasche {bottleIndex + 1}
-                              </span>
-
-                              <strong>
-                                📍 {bottle.location}
-                              </strong>
-                            </div>
-                          ))
-                        )}
-                      </div>
-
-                      <div className="menu-total">
-                        🍾 Gesamt:{" "}
-                        <strong>{bottles.length}</strong>{" "}
-                        {bottles.length === 1
-                          ? "Flasche"
-                          : "Flaschen"}
-                      </div>
-
-                      <div className="menu-updated">
-                        🕒 Zuletzt geändert
-                        <br />
-                        <strong>
-                          {formatDate(wine.updatedAt)}
-                        </strong>
-                      </div>
+                {menu === index && (
+                  <div className="wine-menu-popup">
+                    <div className="menu-title">
+                      🍷 {wine.name}
                     </div>
-                  )}
-                </div>
-              </td>
-            </tr>
-          );
-        })}
+
+                    <div className="menu-subtitle">
+                      📍 Stellplätze
+                    </div>
+
+                    <div className="bottle-list">
+                      {wine.bottles.map((bottle, i) => (
+                        <div
+                          className="bottle-location"
+                          key={bottle.id}
+                        >
+                          <span>
+                            Flasche {i + 1}
+                          </span>
+
+                          <strong>
+                            📍 {bottle.location}
+                          </strong>
+
+                          <button
+                            className="bottle-delete-btn"
+                            onClick={() =>
+                              onDeleteBottle(index, bottle.id)
+                            }
+                          >
+                            🗑
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="menu-total">
+                      🍾 Gesamt: {wine.bottles.length} Flaschen
+                    </div>
+
+                    <div className="menu-updated">
+                      🕐 Zuletzt geändert
+                      <br />
+                      <strong>
+                        {wine.updatedAt
+                          ? new Date(
+                              wine.updatedAt
+                            ).toLocaleString("de-AT")
+                          : "Keine Angabe"}
+                      </strong>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </td>
+          </tr>
+        ))}
       </tbody>
     </table>
   );
