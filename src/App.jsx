@@ -17,7 +17,8 @@ function App() {
       return JSON.parse(saved).map((wine) => ({
         ...wine,
         bottles: wine.bottles || [],
-        updatedAt: wine.updatedAt || new Date().toISOString(),
+        updatedAt:
+          wine.updatedAt || new Date().toISOString(),
       }));
     }
 
@@ -50,11 +51,13 @@ function App() {
 
   function locationUsed(location, ignoreIndex = null) {
     return wines.some((wine, index) => {
-      if (index === ignoreIndex) return false;
+      if (index === ignoreIndex) {
+        return false;
+      }
 
       return (wine.bottles || []).some(
         (bottle) =>
-          bottle.location.toLowerCase() ===
+          bottle.location.trim().toLowerCase() ===
           location.trim().toLowerCase()
       );
     });
@@ -86,10 +89,13 @@ function App() {
 
     const existing = wines.findIndex(
       (wine) =>
-        wine.name.toLowerCase() === newWine.name.trim().toLowerCase() &&
+        wine.name.toLowerCase() ===
+          newWine.name.trim().toLowerCase() &&
         wine.year === newWine.year.trim() &&
-        wine.grape.toLowerCase() === newWine.grape.trim().toLowerCase() &&
-        wine.country.toLowerCase() === newWine.country.trim().toLowerCase()
+        wine.grape.toLowerCase() ===
+          newWine.grape.trim().toLowerCase() &&
+        wine.country.toLowerCase() ===
+          newWine.country.trim().toLowerCase()
     );
 
     if (existing >= 0) {
@@ -97,7 +103,10 @@ function App() {
 
       updated[existing] = {
         ...updated[existing],
-        bottles: [...updated[existing].bottles, bottle],
+        bottles: [
+          ...updated[existing].bottles,
+          bottle,
+        ],
         updatedAt: new Date().toISOString(),
       };
 
@@ -137,7 +146,9 @@ function App() {
   }
 
   function saveEdit() {
-    if (editIndex === null) return;
+    if (editIndex === null) {
+      return;
+    }
 
     if (
       !newWine.name.trim() ||
@@ -149,17 +160,28 @@ function App() {
       return;
     }
 
-    const locations = newWine.bottles.map((b) =>
-      b.location.trim().toLowerCase()
+    const locations = newWine.bottles.map(
+      (bottle) =>
+        bottle.location.trim().toLowerCase()
     );
 
-    if (new Set(locations).size !== locations.length) {
-      alert("❌ Zwei Flaschen dürfen nicht denselben Stellplatz haben.");
+    if (
+      new Set(locations).size !==
+      locations.length
+    ) {
+      alert(
+        "❌ Zwei Flaschen dürfen nicht denselben Stellplatz haben."
+      );
       return;
     }
 
     for (const bottle of newWine.bottles) {
-      if (locationUsed(bottle.location, editIndex)) {
+      if (
+        locationUsed(
+          bottle.location,
+          editIndex
+        )
+      ) {
         alert(
           `❌ Stellplatz ${bottle.location} ist bereits von einem anderen Wein belegt!`
         );
@@ -187,22 +209,32 @@ function App() {
 
   function deleteWine(index) {
     if (
-      confirm(
+      window.confirm(
         `Möchtest du "${wines[index].name}" mit allen Flaschen löschen?`
       )
     ) {
-      setWines(wines.filter((_, i) => i !== index));
+      setWines(
+        wines.filter((_, i) => i !== index)
+      );
     }
   }
 
-  function deleteBottle(wineIndex, bottleId) {
+  function deleteBottle(
+    wineIndex,
+    bottleId
+  ) {
     const wine = wines[wineIndex];
-    const bottle = wine.bottles.find((b) => b.id === bottleId);
 
-    if (!bottle) return;
+    const bottle = wine.bottles.find(
+      (b) => b.id === bottleId
+    );
+
+    if (!bottle) {
+      return;
+    }
 
     if (
-      !confirm(
+      !window.confirm(
         `Diese einzelne Flasche löschen?\n\n${wine.name}\nStellplatz: ${bottle.location}`
       )
     ) {
@@ -213,31 +245,63 @@ function App() {
 
     updated[wineIndex] = {
       ...wine,
-      bottles: wine.bottles.filter((b) => b.id !== bottleId),
+      bottles: wine.bottles.filter(
+        (b) => b.id !== bottleId
+      ),
       updatedAt: new Date().toISOString(),
     };
 
-    if (updated[wineIndex].bottles.length === 0) {
+    if (
+      updated[wineIndex].bottles.length === 0
+    ) {
       updated.splice(wineIndex, 1);
     }
 
     setWines(updated);
   }
 
+  /*
+   * 🔎 VERBESSERTE SUCHE
+   *
+   * Die Suche durchsucht:
+   * - Name
+   * - Jahrgang
+   * - Rebsorte
+   * - Herkunft
+   * - alle Stellplätze
+   */
   const filteredWines = wines.filter((wine) => {
-    const text = `
-      ${wine.name}
-      ${wine.year}
-      ${wine.grape}
-      ${wine.country}
-      ${wine.bottles.map((b) => b.location).join(" ")}
-    `.toLowerCase();
+    const searchText =
+      search.trim().toLowerCase();
 
-    return text.includes(search.toLowerCase());
+    if (!searchText) {
+      return true;
+    }
+
+    const locations = (
+      wine.bottles || []
+    )
+      .map((bottle) => bottle.location)
+      .join(" ");
+
+    const searchableText = [
+      wine.name,
+      wine.year,
+      wine.grape,
+      wine.country,
+      locations,
+    ]
+      .join(" ")
+      .toLowerCase();
+
+    return searchableText.includes(
+      searchText
+    );
   });
 
   const totalBottles = wines.reduce(
-    (sum, wine) => sum + wine.bottles.length,
+    (sum, wine) =>
+      sum + wine.bottles.length,
     0
   );
 
@@ -272,7 +336,11 @@ function App() {
           setEditIndex(null);
           setShowForm(false);
         }}
-        onSave={editIndex !== null ? saveEdit : addWine}
+        onSave={
+          editIndex !== null
+            ? saveEdit
+            : addWine
+        }
         newWine={newWine}
         setNewWine={setNewWine}
       />
